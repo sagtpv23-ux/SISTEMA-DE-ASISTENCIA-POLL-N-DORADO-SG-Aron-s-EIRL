@@ -1,5 +1,5 @@
 "modulo de planilla mensual:"
-"calcula el pago de mensual de cada trabajador a parti de las horas"
+"calcula el pago de mensual de cada trabajador a partir de las horas"
 "trabajdas en un mes, separadas por dos turnos (Mañana y Tarde), teniendo"
 "en cuenta también su tarifa por hora."
 
@@ -7,7 +7,7 @@ TURNOS = ("Mañana, Tarde")
 
 def calcular_horas_mes_por_turno(lista_asistencias, codigo, mes):
     """
-    Suma las horas trabajadas por un empleado en un mes ('AAAA-MM'),
+    Suma las horas trabajadas por un trabajador en un mes ('AAAA-MM'),
     separadas por turno. Solo cuenta jornadas cerradas (con hora de salida).
     Retorna un diccionario: {"Mañana": horas, "Tarde": horas}.
     """
