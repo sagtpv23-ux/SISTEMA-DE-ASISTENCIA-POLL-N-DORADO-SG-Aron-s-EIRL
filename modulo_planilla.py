@@ -3,26 +3,26 @@
 "trabajdas en un mes, separadas por dos turnos (Mañana y Tarde), teniendo"
 "en cuenta también su tarifa por hora."
 
-TURNOS = ("Mañana, Tarde")
+TURNOS = ("Mañana", "Tarde")
 
 def calcular_horas_mes_por_turno(lista_asistencias, codigo, mes):
     """
-    Suma las horas trabajadas por un trabajador en un mes ('AAAA-MM'),
+    Suma las horas trabajadas por un empleado en un mes ('AAAA-MM'),
     separadas por turno. Solo cuenta jornadas cerradas (con hora de salida).
     Retorna un diccionario: {"Mañana": horas, "Tarde": horas}.
     """
     codigo = codigo.strip().upper()
     horas = {turno: 0.0 for turno in TURNOS}
     for registro in lista_asistencias:
-        if(
-            registro["codigo_trabajador"] == codigo
+        if (
+            registro["codigo_empleado"] == codigo
             and registro["fecha"].startswith(mes)
-            and registro["horas_trabajadas"] !=""
+            and registro["horas_trabajadas"] != ""
         ):
             try:
                 horas_registro = float(registro["horas_trabajadas"])
             except (ValueError, TypeError):
-                #Dato corrupto (el: archivo editado a mano): se omite el registro
+                # Dato corrupto (ej: archivo editado a mano): se omite el registro
                 continue
             turno = registro.get("turno", "")
             if turno in horas:
@@ -32,40 +32,40 @@ def calcular_horas_mes_por_turno(lista_asistencias, codigo, mes):
 def calcular_horas_mes(lista_asistencias, codigo, mes):
     """Total de horas del mes (suma de ambos turnos)."""
     por_turno = calcular_horas_mes_por_turno(lista_asistencias, codigo, mes)
-    return round(sum(por_turno.values()), 2)  
+    return round(sum(por_turno.values()), 2)
 
-def calcular_pago_mensual(trabajador, lista_asistencias, mes):
+def calcular_pago_mensual(empleado, lista_asistencias, mes):
     """
-    Pago de un trabajador en un mes: (horas Mañana + horas Tarde) x tarifa_hora.
+    Pago de UN empleado en un mes: (horas Mañana + horas Tarde) x tarifa_hora.
     Retorna un diccionario con el detalle del calculo.
     """
-    por_turno = calcular_horas_mes_por_turno(lista_asistencias,trabajador["codigo"], mes )
-    total_horas = round(sum(por_turno.values(), 2)) 
+    por_turno = calcular_horas_mes_por_turno(lista_asistencias, empleado["codigo"], mes)
+    total_horas = round(sum(por_turno.values()), 2)
     try:
-        tarifa = float(trabajador["tarifa_hora"])  
+        tarifa = float(empleado["tarifa_hora"])
     except (ValueError, TypeError):
-        tarifa = 0.0 #tarifa ausente o inválida: no se puede calcular el pago
+        tarifa = 0.0  # tarifa ausente o invalida: no se puede calcular el pago
     return {
-        "codigo": trabajador["codigo"],
-        "nombres": trabajador["nombres"],
-        "apellidos": trabajador["apellidos"],
+        "codigo": empleado["codigo"],
+        "nombres": empleado["nombres"],
+        "apellidos": empleado["apellidos"],
         "mes": mes,
-        "horas_mañana": por_turno["mañana"],
-        "horas_tarde": por_turno["tarde"],
+        "horas_manana": por_turno["Mañana"],
+        "horas_tarde": por_turno["Tarde"],
         "horas_trabajadas": total_horas,
         "tarifa_hora": tarifa,
         "pago_mensual": round(total_horas * tarifa, 2),
-    } 
+    }
 
-def generar_planilla_mensual(lista_trabajadores, lista_asistencias, mes):
+def generar_planilla_mensual(lista_empleados, lista_asistencias, mes):
     """
-    Planilla completa: el pago de cada trabajador activo para el mes indicado.
+    Planilla completa: el pago de CADA empleado activo para el mes indicado.
     Retorna una lista de diccionarios (un registro por trabajador).
     """
     planilla = []
-    for trabajador in lista_trabajadores:
-        if trabajador["estado"] == "ACTIVO":
-            planilla.append(calcular_pago_mensual(trabajador, lista_asistencias, mes))
+    for empleado in lista_empleados:
+        if empleado["estado"] == "Activo":
+            planilla.append(calcular_pago_mensual(empleado, lista_asistencias, mes))
     return planilla
 
 def total_planilla(planilla):
@@ -81,7 +81,7 @@ def contar_jornadas_mes(lista_asistencias, codigo, mes):
     cerradas = 0
     abiertas = 0
     for registro in lista_asistencias:
-        if registro["codigo_trabajador"] == codigo and registro["fecha"].startswith(mes):
+        if registro["codigo_empleado"] == codigo and registro["fecha"].startswith(mes):
             if registro["hora_salida"] == "":
                 abiertas += 1
             else:
@@ -90,10 +90,10 @@ def contar_jornadas_mes(lista_asistencias, codigo, mes):
 
 def meses_con_datos(lista_asistencias):
     """Lista ordenada de los meses (AAAA-MM) que tienen asistencias registradas."""
-    meses = []   
+    meses = []
     for registro in lista_asistencias:
         mes = registro["fecha"][:7]
         if mes not in meses:
             meses.append(mes)
-    meses.sort()  
+    meses.sort()
     return meses
