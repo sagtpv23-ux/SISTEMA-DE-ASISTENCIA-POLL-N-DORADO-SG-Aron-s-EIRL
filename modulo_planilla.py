@@ -15,7 +15,7 @@ def calcular_horas_mes_por_turno(lista_asistencias, codigo, mes):
     horas = {turno: 0.0 for turno in TURNOS}
     for registro in lista_asistencias:
         if(
-            registro["codigo_empleado"] == codigo
+            registro["codigo_trabajador"] == codigo
             and registro["fecha"].startswith(mes)
             and registro["horas_trabajadas"] !=""
         ):
@@ -36,7 +36,7 @@ def calcular_horas_mes(lista_asistencias, codigo, mes):
 
 def calcular_pago_mensual(trabajador, lista_asistencias, mes):
     """
-    Pago de UN empleado en un mes: (horas Mañana + horas Tarde) x tarifa_hora.
+    Pago de un trabajador en un mes: (horas Mañana + horas Tarde) x tarifa_hora.
     Retorna un diccionario con el detalle del calculo.
     """
     por_turno = calcular_horas_mes_por_turno(lista_asistencias,trabajador["codigo"], mes )
@@ -59,7 +59,7 @@ def calcular_pago_mensual(trabajador, lista_asistencias, mes):
 
 def generar_planilla_mensual(lista_trabajadores, lista_asistencias, mes):
     """
-    Planilla completa: el pago de CADA empleado activo para el mes indicado.
+    Planilla completa: el pago de cada trabajador activo para el mes indicado.
     Retorna una lista de diccionarios (un registro por trabajador).
     """
     planilla = []
