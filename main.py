@@ -19,12 +19,14 @@ from modulo_asistencia import (
     completar_turnos,
 )
 from modulo_persistencia import (
-    guardar_empleados,
     cargar_empleados,
     guardar_asistencias,
     cargar_asistencias,
 )
+
+import os
 from modulo_reportes import exportar_a_excel
+
 from modulo_planilla import (
     generar_planilla_mensual,
     total_planilla,
@@ -133,7 +135,7 @@ def main():
 
             elif opcion == "5":
                 codigo = input("Codigo del trabajador: ")
-                fecha = input("Fecha (AAAA-Mpython (AAAA-MM-DD): ")
+                fecha = input("Fecha (AAAA-MM-DD): ")
                 hora = input("Hora de salida (HH:MM): ")
                 ok, mensaje = marcar_salida(lista_asistencias, codigo, fecha, hora)
                 print(mensaje)
