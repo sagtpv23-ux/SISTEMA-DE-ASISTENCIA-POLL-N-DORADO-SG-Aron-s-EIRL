@@ -203,7 +203,7 @@ def main():
         # Ctrl+C o fin de la entrada: se sale ordenadamente sin perder datos
         print("\nPrograma interrumpido por el usuario.")
     finally:
-        # guardar_empleados(lista_empleados)
+        #guardar_empleados(lista_empleados)
         guardar_asistencias(lista_asistencias)
 
 
