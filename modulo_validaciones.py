@@ -8,7 +8,7 @@ import re
 from datetime import datetime
 
 CARGOS_VALIDOS = ["Parrillero", "Mesero", "Caja", "Cocina", "Administracion"]
-TURNOS_VALIDOS = ["Mañana", "Tarde"]  # SG Aron's EIRL trabaja con 2 turnos 
+TURNOS_VALIDOS = ["Mañana", "Tarde"]  # SG Aron's EIRL trabaja con 2 turnos
 
 
 def validar_codigo_formato(codigo):
@@ -60,36 +60,36 @@ def validar_tarifa_hora(tarifa_str):
 
 
 def validar_formato_fecha(fecha_str):
-    """Formato esperado: dd/mm/yyyy (ej: 31/12/2023)."""
+    """Formato esperado: AAAA-MM-DD."""
     try:
-        datetime.strptime(fecha_str.strip(), "%d/%m/%Y")
+        datetime.strptime(fecha_str.strip(), "%Y-%m-%d")
         return True
     except ValueError:
         return False
 
 
-def validar_formato_mes(fecha_str):
-    """Formato esperado para planilla: mm/yyyy (ej: 12/2023)."""
+def validar_formato_mes(mes_str):
+    """Formato esperado para la planilla: AAAA-MM (ej: 2026-09)."""
     try:
-        datetime.strptime(fecha_str.strip(), "%m/%Y")
+        datetime.strptime(mes_str.strip(), "%Y-%m")
         return True
     except ValueError:
         return False
 
-    
+
 def normalizar_hora(hora_str):
     """
-    Devuelve la hora siempre como HH:MM con cero inicial (´8:05` -> `08:05`).
-    o None si el formato no es valido. es necesario porque las horas se
-    comparan como texto y ´8:05` > ´14:00`daria un resultado incorrecto.
-    """ 
+    Devuelve la hora siempre como HH:MM con cero inicial ('8:05' -> '08:05'),
+    o None si el formato no es valido. Es necesario porque las horas se
+    comparan como texto y '8:05' > '14:00' daria un resultado incorrecto.
+    """
     try:
         return datetime.strptime(hora_str.strip(), "%H:%M").strftime("%H:%M")
     except ValueError:
         return None
 
 
-def vaidar_formato_hora(hora_str):
+def validar_formato_hora(hora_str):
     """Formato esperado: HH:MM en 24 horas."""
     try:
         datetime.strptime(hora_str.strip(), "%H:%M")
@@ -99,7 +99,7 @@ def vaidar_formato_hora(hora_str):
 
 
 def hora_es_posterior(hora_entrada, hora_salida):
-    """verifica que la hora de salida sea posterior a la hora de entrada."""
+    """Verifica que la hora de salida sea posterior a la de entrada."""
     fmt = "%H:%M"
     return datetime.strptime(hora_salida, fmt) > datetime.strptime(hora_entrada, fmt)
 
@@ -107,6 +107,6 @@ def hora_es_posterior(hora_entrada, hora_salida):
 def codigo_existe(codigo, lista_empleados):
     """Busqueda lineal: retorna True si el codigo ya esta registrado."""
     for empleado in lista_empleados:
-        if empleado ["codigo"] == codigo.strip().upper():
+        if empleado["codigo"] == codigo.strip().upper():
             return True
     return False
