@@ -30,9 +30,9 @@ def _escribir_csv(ruta, campos, filas):
     """Escribe una lista de diccionarios en un csv. Retorna true si tuvo exito."""
     try:
         if os.path.dirname(ruta) == CARPETA_DATA:
-            os.makedirs(CARPETA_DATA, exist_ok=true)
+            os.makedirs(CARPETA_DATA, exist_ok=True)
         with open(ruta, mode="W", newline="", encoding="utf-8") as archivo:
-             escritor = csv.DictWrite(archivo, fieldnames=campos, extrasaction="ignore")
+             escritor = csv.DictWrite(archivo, fieldnames= campos, extrasaction="ignore")
              escritor.writeheader()
         for fila in filas:
              escritor.writerow(fila)
@@ -63,10 +63,10 @@ def _leer_csv(ruta, campos):
         return filas
     
     def cargar_empleados(ruta=ARCHIVO_EMPLEADOS):
-        return _leer_csv(rutas,CAMPOS_EMPELADOS)
+        return _leer_csv(ruta,CAMPOS_EMPELADOS)
 
     def guardar_asistencias(lista_asistencia, ruta=ARCHIVO_ASISTENCIAS):
         return _escribir_csv(ruta, CAMPOS_ASISTENCIA, lista_asistencia)
 
     def cargar_asistencias(ruta=ARCHIVO_ASISTENCIAS):
-        return _leer_csv(ruta, CAMPOS_ASISTENCIAS)
+        return _leer_csv(ruta, CAMPOS_ASISTENCIA)

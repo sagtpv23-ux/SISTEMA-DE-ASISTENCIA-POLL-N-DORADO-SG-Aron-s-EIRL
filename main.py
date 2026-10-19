@@ -133,7 +133,7 @@ def main():
 
             elif opcion == "5":
                 codigo = input("Codigo del trabajador: ")
-                fecha = input("Fecha (AAAA-MM-DD): ")
+                fecha = input("Fecha (AAAA-Mpython (AAAA-MM-DD): ")
                 hora = input("Hora de salida (HH:MM): ")
                 ok, mensaje = marcar_salida(lista_asistencias, codigo, fecha, hora)
                 print(mensaje)
