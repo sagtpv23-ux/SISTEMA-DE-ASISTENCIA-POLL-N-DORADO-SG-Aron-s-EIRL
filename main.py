@@ -98,7 +98,8 @@ def main():
                 )
                 print(mensaje)
                 if ok:
-                    guardar_empleados(lista_empleados)
+                    pass
+                    # guardar_empleados(lista_empleados)
 
             elif opcion == "2":
                 empleados = listar_empleados(lista_empleados)
@@ -202,7 +203,7 @@ def main():
         # Ctrl+C o fin de la entrada: se sale ordenadamente sin perder datos
         print("\nPrograma interrumpido por el usuario.")
     finally:
-        guardar_empleados(lista_empleados)
+        # guardar_empleados(lista_empleados)
         guardar_asistencias(lista_asistencias)
 
 
