@@ -1,0 +1,15 @@
+# Datos personales y secretos locales (que no permite subir a Git)
+data/*.db
+data/*.db-*
+data/*.sqlite
+data/*.sqlite3
+data/secret.key
+data/*.csv
+data/*.xlsx
+data/*.json
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
