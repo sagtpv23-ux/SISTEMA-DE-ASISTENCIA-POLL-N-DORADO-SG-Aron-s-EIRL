@@ -36,11 +36,11 @@ Hacer un sistema en Python que registre las entradas y salidas, que detecte solo
 
 ### 4. Integrantes
 
-- Arias Correa, Evelin Milagritos - models/validaciones.py y pruebas.py
-- Luicho Mosqueira, Hector Alexander - models/empleado.py
-- Mosqueira Tanta, Saul Alexander - models/asistencia.py
-- Ocas Perez, Daniel Alexander - models/base_datos.py y views/reporte_excel.py
-- Valdez Quiroz, Victor Paul - models/planilla.py, main.py y controllers/
+Victor:git ignore, main, pruebas, README, requirements, modelo mvc. 
+Evelin:revisión seguridad, Planilla, Asistencia, consola
+Héctor:usuarios, empleado, web_controller, Consola_controller
+Saúl:Auditoría, validaciones, reporte_CSV, ojito, index
+Alex:Base de datos, App_web, reporte_Json, Reporte Excel, login
 
 ### 5. Requisitos
 
