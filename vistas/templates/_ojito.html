@@ -1,0 +1,42 @@
+{# Ojito para mostrar/ocultar una contraseña. Se usa en el login y en Usuarios.
+   Uso: {% from "_ojito.html" import estilos, boton, script %}
+        {{ estilos() }}   (dentro de <head>)
+        <div class="clave-wrap"><input type="password" id="clave" ...>{{ boton('clave') }}</div>
+        {{ script() }}    (al final de la pagina)
+   'boton' recibe el id del <input>. #}
+{% macro estilos() -%}
+<style>
+.clave-wrap{position:relative;display:block}
+.clave-wrap input{width:100%;padding-right:3.4em}
+.ojito{position:absolute;right:.4em;top:50%;transform:translateY(-50%);width:2.6em;height:2.6em;padding:0;border:0;background:transparent;color:#d9480f;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.ojito:hover{background:#d9480f14}
+.ojito:focus-visible{outline:2px solid #d9480f}
+.ojito svg{width:1.5em;height:1.5em;pointer-events:none}
+.ojito .oculto{display:none}
+</style>
+{%- endmacro %}
+
+{% macro boton(campo) -%}
+<button class="ojito" type="button" data-toggle="{{ campo }}" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar u ocultar contraseña">
+<svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+<svg class="ojo-tachado oculto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.8 19.8 0 0 1-3.17 4.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+</button>
+{%- endmacro %}
+
+{% macro script() -%}
+<script>
+document.querySelectorAll('[data-toggle]').forEach(function (boton) {
+  boton.addEventListener('click', function () {
+    var campo = document.getElementById(boton.dataset.toggle);
+    if (!campo) { return; }
+    var mostrar = campo.type === 'password';
+    campo.type = mostrar ? 'text' : 'password';
+    boton.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    boton.setAttribute('aria-pressed', mostrar ? 'true' : 'false');
+    boton.querySelector('.ojo-abierto').classList.toggle('oculto', mostrar);
+    boton.querySelector('.ojo-tachado').classList.toggle('oculto', !mostrar);
+    campo.focus();
+  });
+});
+</script>
+{%- endmacro %}
