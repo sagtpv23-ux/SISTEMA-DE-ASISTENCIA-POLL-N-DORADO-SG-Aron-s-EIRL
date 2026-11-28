@@ -1,0 +1,296 @@
+{% from "_ojito.html" import estilos, boton, script %}<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asistencia - SG Aron's EIRL</title>
+<style>
+  :root { --naranja:#d9480f; --fondo:#f6f4f1; --borde:#ddd6cf; --texto:#2b2623; }
+  * { box-sizing:border-box; }
+  html { font-size:21px; }
+  html, body { min-height:100vh; }
+  body { margin:0; font-family:system-ui,Segoe UI,Arial,sans-serif; background:var(--fondo); color:var(--texto); }
+  header { background:var(--naranja); color:#fff; padding:20px 40px; }
+  header h1 { margin:0; font-size:1.6rem; }
+  header small { opacity:.85; }
+  nav { display:flex; gap:6px; padding:18px 40px 0; flex-wrap:wrap; }
+  nav a { padding:14px 30px; font-size:1.05rem; text-decoration:none; color:var(--texto); background:#e9e3dd; border-radius:8px 8px 0 0; }
+  nav a.activa { background:#fff; font-weight:600; color:var(--naranja); }
+  main { background:#fff; margin:0 40px 40px; padding:32px; min-height:70vh; border:1px solid var(--borde); border-radius:0 8px 8px 8px; }
+  .msg { padding:14px 18px; font-size:1rem; border-radius:6px; margin-bottom:12px; }
+  .msg.ok { background:#e6f6ea; color:#1b5e2f; } .msg.error { background:#fdeaea; color:#9b1c1c; }
+  form.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; align-items:end; margin-bottom:16px; }
+  label { display:flex; flex-direction:column; font-size:.9rem; gap:6px; }
+  input, select { padding:12px; border:1px solid var(--borde); border-radius:8px; font-size:1rem; }
+  button, .btn { padding:13px 24px; background:var(--naranja); color:#fff; border:0; border-radius:6px; cursor:pointer; font-size:1rem; text-decoration:none; display:inline-block; }
+  .btn.sec { background:#6b6258; }
+  .barra { display:flex; gap:8px; flex-wrap:wrap; align-items:end; margin-bottom:14px; }
+  .tabla-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:1rem; }
+  th { background:#f1ece6; text-align:left; } th, td { padding:13px 16px; border-bottom:1px solid var(--borde); }
+  tr.tarde td { background:#fff1f1; }
+  .total { text-align:right; font-size:1.6rem; font-weight:700; margin-top:14px; }
+  h2 { font-size:1.3rem; margin:22px 0 14px; }
+  header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  header .sesion { display:flex; align-items:center; gap:14px; font-size:.95rem; }
+  header .sesion button { padding:8px 16px; background:#fff; color:var(--naranja); }
+  form.en-linea { display:inline; margin:0; }
+  button.mini, .btn.mini { padding:7px 14px; font-size:.85rem; }
+  table.compacta { font-size:.9rem; } table.compacta th, table.compacta td { padding:10px 12px; }
+  td.nowrap { white-space:nowrap; }
+  button.peligro { background:#b42318; }
+  tr.baja td { color:#8a817a; background:#f4f1ee; }
+  .etq { padding:3px 10px; border-radius:12px; font-size:.85rem; color:#fff; white-space:nowrap; }
+  .etq.Insertar { background:#2e9e4f; } .etq.Modificar { background:#d99a00; } .etq.Eliminar { background:#c93a2b; }
+  .etq.Buscar { background:#2b7bd0; } .etq.Exportar { background:#7a4bc4; } .etq.Login, .etq.Logout { background:#6b6258; }
+  .etq.Login\ fallido { background:#8c1d1d; }
+  .hora-sel { display:flex; gap:6px; } .hora-sel select { flex:1; min-width:0; }
+  label small { color:#6b6258; font-size:.78rem; }
+  input[readonly] { background:#f4f1ee; color:#5a524b; }
+  #coincidencia { font-size:.82rem; min-height:1.1em; } #coincidencia.ok { color:#1b5e2f; } #coincidencia.mal { color:#9b1c1c; }
+</style>
+{{ estilos() }}
+</head>
+<body>
+<header>
+  <h1>Sistema de Asistencia <small>· SG Aron's EIRL – Pollón Dorado</small></h1>
+  <div class="sesion">
+    <span>👤 {{ usuario.nombre }} · <b>{{ usuario.rol }}</b></span>
+    <form method="post" action="{{ url_for('logout') }}" class="en-linea"><input type="hidden" name="csrf" value="{{ csrf_token }}"><button>Cerrar sesión</button></form>
+  </div>
+</header>
+<nav>
+  {% if puede('reportes') %}<a href="{{ url_for('inicio', vista='panel') }}" class="{{ 'activa' if vista=='panel' }}">Inicio</a>{% endif %}
+  {% if puede('trabajadores') %}<a href="{{ url_for('inicio', vista='trabajadores') }}" class="{{ 'activa' if vista=='trabajadores' }}">Trabajadores</a>{% endif %}
+  {% if puede('asistencia') %}<a href="{{ url_for('inicio', vista='asistencia') }}" class="{{ 'activa' if vista=='asistencia' }}">Asistencia</a>{% endif %}
+  {% if puede('reportes') %}<a href="{{ url_for('inicio', vista='planilla') }}" class="{{ 'activa' if vista=='planilla' }}">Planilla mensual</a>{% endif %}
+  {% if puede('auditoria') %}<a href="{{ url_for('inicio', vista='auditoria') }}" class="{{ 'activa' if vista=='auditoria' }}">Auditoría</a>{% endif %}
+  {% if puede('usuarios') %}<a href="{{ url_for('inicio', vista='usuarios') }}" class="{{ 'activa' if vista=='usuarios' }}">Usuarios</a>{% endif %}
+</nav>
+<main>
+{% with mensajes = get_flashed_messages(with_categories=true) %}
+  {% for categoria, texto in mensajes %}<div class="msg {{ categoria }}">{{ texto }}</div>{% endfor %}
+{% endwith %}
+
+{% if vista == 'panel' %}
+  <h2>Inicio del administrador</h2>
+  <div class="barra" style="gap:14px">
+    <div class="msg ok" style="min-width:170px"><b style="font-size:1.6rem">{{ panel.trabajadores }}</b><br>trabajadores activos</div>
+    <div class="msg ok" style="min-width:170px"><b style="font-size:1.6rem">{{ panel.hoy }}</b><br>asistencias de hoy</div>
+    <div class="msg ok" style="min-width:170px"><b style="font-size:1.6rem">{{ panel.abiertas }}</b><br>jornadas sin salida</div>
+    <div class="msg {{ 'error' if panel.tardanzas_mes else 'ok' }}" style="min-width:170px"><b style="font-size:1.6rem">{{ panel.tardanzas_mes }}</b><br>tardanzas del mes</div>
+  </div>
+  <h2>Exportar el mes {{ panel.mes }}</h2>
+  <div class="barra">
+    <a class="btn" href="{{ url_for('ruta_exportar', mes=panel.mes, formato='excel') }}">Exportar a Excel</a>
+    <a class="btn sec" href="{{ url_for('inicio', vista='planilla', mes=panel.mes) }}">Ver planilla</a>
+    <a class="btn sec" href="{{ url_for('inicio', vista='asistencia') }}">Ver todas las asistencias</a>
+  </div>
+  <h2>Últimas asistencias registradas</h2>
+  <div class="tabla-wrap"><table>
+    <tr><th>Código</th><th>Fecha</th><th>Turno</th><th>Entrada</th><th>Salida</th><th>Horas</th><th>Tardanza</th></tr>
+    {% for r in panel.recientes %}
+      <tr class="{{ 'tarde' if r.tardanza == 'Si' }}"><td>{{ r.codigo_empleado }}</td><td>{{ r.fecha }}</td><td>{{ r.turno }}</td><td>{{ r.hora_entrada|hora12 }}</td><td>{{ r.hora_salida|hora12 or '—' }}</td><td>{{ r.horas_trabajadas or '—' }}</td><td>{{ r.tardanza }}</td></tr>
+    {% else %}<tr><td colspan="7">Todavía no hay asistencias registradas.</td></tr>{% endfor %}
+  </table></div>
+
+{% elif vista == 'trabajadores' %}
+  <h2>Registrar trabajador</h2>
+  <form method="post" action="{{ url_for('ruta_registrar') }}" class="grid">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+    <label>Código (E001)<input name="codigo" required pattern="[Ee][0-9]{3}"></label>
+    <label>Nombres<input name="nombres" required></label>
+    <label>Apellidos<input name="apellidos" required></label>
+    <label>DNI (8 dígitos)<input name="dni" required pattern="[0-9]{8}" maxlength="8"></label>
+    <label>Cargo<select name="cargo">{% for c in cargos %}<option>{{ c }}</option>{% endfor %}</select></label>
+    <label>Turno habitual<select name="turno">{% for t in turnos %}<option>{{ t }}</option>{% endfor %}</select></label>
+    <label>Tarifa por hora (S/)<input name="tarifa" required inputmode="decimal"></label>
+    <button>Registrar</button>
+  </form>
+
+  <form method="get" class="barra">
+    <input type="hidden" name="vista" value="trabajadores">
+    <label>Buscar por código<input name="buscar" value="{{ buscar }}" placeholder="E001"></label>
+    <button>Buscar</button>
+    <a class="btn sec" href="{{ url_for('inicio', vista='trabajadores') }}">Mostrar todos</a>
+  </form>
+  <div class="tabla-wrap"><table class="compacta">
+    <tr><th>Código</th><th>Nombre</th><th>DNI</th><th>Cargo</th><th>Turno</th><th>Tarifa/h (S/)</th><th>Estado</th>{% if es_admin %}<th>Acciones</th>{% endif %}</tr>
+    {% for e in empleados %}
+      <tr class="{{ 'baja' if e.estado != 'Activo' }}"><td>{{ e.codigo }}</td><td>{{ e.nombres }} {{ e.apellidos }}</td><td>{{ e.dni }}</td>
+          <td>{{ e.cargo }}</td><td>{{ e.turno }}</td><td>{{ e.tarifa_hora }}</td><td>{{ e.estado }}</td>
+          {% if es_admin %}<td class="nowrap">
+            {% if e.estado == 'Activo' %}
+              <a class="btn mini sec" href="{{ url_for('inicio', vista='editar', codigo=e.codigo) }}">Modificar</a>
+              <form method="post" action="{{ url_for('ruta_eliminar', codigo=e.codigo) }}" class="en-linea"
+                    onsubmit="return confirm('¿Eliminar al trabajador {{ e.codigo }}? Si ya tiene asistencias se le dará de baja y se conservará su historial.');">
+                <input type="hidden" name="csrf" value="{{ csrf_token }}">
+                <button class="mini peligro">Eliminar</button>
+              </form>
+            {% else %}—{% endif %}
+          </td>{% endif %}</tr>
+    {% else %}<tr><td colspan="{{ 8 if es_admin else 7 }}">No hay trabajadores para mostrar.</td></tr>{% endfor %}
+  </table></div>
+
+{% elif vista == 'editar' %}
+  <h2>Modificar trabajador {{ emp_editar.codigo }}</h2>
+  <form method="post" action="{{ url_for('ruta_modificar', codigo=emp_editar.codigo) }}" class="grid">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+    <label>Código<input value="{{ emp_editar.codigo }}" disabled></label>
+    <label>Nombres<input name="nombres" required value="{{ emp_editar.nombres }}"></label>
+    <label>Apellidos<input name="apellidos" required value="{{ emp_editar.apellidos }}"></label>
+    <label>DNI (8 dígitos)<input name="dni" required pattern="[0-9]{8}" maxlength="8" value="{{ emp_editar.dni }}"></label>
+    <label>Cargo<select name="cargo">{% for c in cargos %}<option {{ 'selected' if c == emp_editar.cargo }}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Turno habitual<select name="turno">{% for t in turnos %}<option {{ 'selected' if t == emp_editar.turno }}>{{ t }}</option>{% endfor %}</select></label>
+    <label>Tarifa por hora (S/)<input name="tarifa" required inputmode="decimal" value="{{ emp_editar.tarifa_hora }}"></label>
+    <button>Guardar cambios</button>
+  </form>
+  <a class="btn sec" href="{{ url_for('inicio', vista='trabajadores') }}">Cancelar</a>
+
+{% elif vista == 'asistencia' %}
+  <h2>{{ 'Marcar mi asistencia' if solo_propias else 'Marcar asistencia' }}</h2>
+  {% if solo_propias %}<div class="msg ok"><b>Hola, {{ usuario.nombre }}.</b> {{ mi_estado }}</div>{% endif %}
+  <form method="post" class="grid" id="formMarcar" data-corte="{{ corte_tarde }}">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+    {% if solo_propias %}
+      <label>Tu cuenta<input value="{{ usuario.nombre }} ({{ mi_codigo or 'sin vincular' }})" disabled></label>
+    {% else %}
+      <label>Código<input name="codigo" required placeholder="E001"></label>
+    {% endif %}
+    <label>Fecha (solo hoy)
+      <input type="date" name="fecha" id="fecha" value="{{ hoy }}" min="{{ hoy }}" max="{{ hoy }}" readonly required>
+    </label>
+    <label>Hora (AM / PM)
+      <span class="hora-sel">
+        <select name="hora_h" id="hora_h" aria-label="Hora">{% for h in range(1, 13) %}{% set hh = '%02d'|format(h) %}<option value="{{ hh }}" {{ 'selected' if hh == hora_h }}>{{ hh }}</option>{% endfor %}</select>
+        <select name="hora_m" id="hora_m" aria-label="Minutos">{% for m in range(0, 60) %}{% set mm = '%02d'|format(m) %}<option value="{{ mm }}" {{ 'selected' if mm == hora_m }}>{{ mm }}</option>{% endfor %}</select>
+        <select name="hora_ap" id="hora_ap" aria-label="AM o PM"><option value="AM" {{ 'selected' if hora_ap == 'AM' }}>AM</option><option value="PM" {{ 'selected' if hora_ap == 'PM' }}>PM</option></select>
+      </span>
+    </label>
+    <label>Turno
+      <select name="turno" id="turno" required>{% for t in turnos %}<option value="{{ t }}" {{ 'selected' if t == turno_auto }}>{{ t }}</option>{% endfor %}</select>
+      <small>Se elige solo según la hora; puede cambiarlo.</small>
+    </label>
+    <button formaction="{{ url_for('ruta_entrada') }}">Marcar ENTRADA</button>
+    <button formaction="{{ url_for('ruta_salida') }}" class="sec" style="background:#6b6258">Marcar SALIDA</button>
+  </form>
+  <script>
+  (function () {
+    var form = document.getElementById('formMarcar');
+    var fecha = document.getElementById('fecha'), h = document.getElementById('hora_h'), m = document.getElementById('hora_m');
+    var ap = document.getElementById('hora_ap'), turno = document.getElementById('turno');
+    var partes = form.dataset.corte.split(':');
+    var corte = parseInt(partes[0], 10) * 60 + parseInt(partes[1], 10);   // desde aqui el turno es Tarde
+    var horaManual = false, turnoManual = false;
+
+    function dos(n) { return (n < 10 ? '0' : '') + n; }
+    function turnoSegunHora() {
+      var hora = parseInt(h.value, 10) % 12 + (ap.value === 'PM' ? 12 : 0);
+      return hora * 60 + parseInt(m.value, 10) >= corte ? 'Tarde' : 'Mañana';
+    }
+    function ponerTurno() { if (!turnoManual) { turno.value = turnoSegunHora(); } }
+    // Mientras la persona no toque la hora, se mantiene la hora y la fecha actuales (la pagina puede quedar abierta)
+    function relojActual() {
+      var ahora = new Date();
+      var hoy = ahora.getFullYear() + '-' + dos(ahora.getMonth() + 1) + '-' + dos(ahora.getDate());
+      fecha.min = fecha.max = fecha.value = hoy;
+      if (!horaManual) {
+        var hh = ahora.getHours();
+        h.value = dos(hh % 12 || 12); m.value = dos(ahora.getMinutes()); ap.value = hh < 12 ? 'AM' : 'PM';
+      }
+      ponerTurno();
+    }
+    [h, m, ap].forEach(function (el) { el.addEventListener('change', function () { horaManual = true; ponerTurno(); }); });
+    turno.addEventListener('change', function () { turnoManual = true; });
+    relojActual();
+    setInterval(relojActual, 20000);
+  })();
+  </script>
+
+  <form method="get" class="barra">
+    <input type="hidden" name="vista" value="asistencia">
+    {% if not solo_propias %}
+      <label>Filtrar por código<input name="codigo" value="{{ codigo }}" placeholder="E001"></label>
+      <button>Ver</button>
+      <a class="btn sec" href="{{ url_for('inicio', vista='asistencia', orden='fecha', codigo=codigo) }}">Ordenar por fecha</a>
+      <a class="btn sec" href="{{ url_for('inicio', vista='asistencia') }}">Mostrar todas</a>
+    {% else %}
+      <a class="btn sec" href="{{ url_for('inicio', vista='asistencia', orden='fecha') }}">Ordenar por fecha</a>
+      <span>Solo ves tu propia asistencia.</span>
+    {% endif %}
+    <span>Tardanzas registradas: <b>{{ tardanzas }}</b></span>
+  </form>
+  <div class="tabla-wrap"><table>
+    <tr><th>Código</th><th>Fecha</th><th>Turno</th><th>Entrada</th><th>Salida</th><th>Horas</th><th>Tardanza</th></tr>
+    {% for r in asistencias %}
+      <tr class="{{ 'tarde' if r.tardanza == 'Si' }}"><td>{{ r.codigo_empleado }}</td><td>{{ r.fecha }}</td><td>{{ r.turno }}</td>
+          <td>{{ r.hora_entrada|hora12 }}</td><td>{{ r.hora_salida|hora12 or '—' }}</td><td>{{ r.horas_trabajadas or '—' }}</td><td>{{ r.tardanza }}</td></tr>
+    {% else %}<tr><td colspan="7">No hay asistencias para mostrar.</td></tr>{% endfor %}
+  </table></div>
+
+{% elif vista == 'auditoria' %}
+  <h2>Auditoría – historial de cambios</h2>
+  <p>Últimos 200 movimientos. Los registros no se pueden modificar ni borrar.</p>
+  <div class="tabla-wrap"><table class="compacta">
+    <tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Detalle</th></tr>
+    {% for r in historial %}
+      <tr><td class="nowrap">{{ r.fecha_hora }}</td><td>{{ r.usuario }}</td><td><span class="etq {{ r.accion }}">{{ r.accion }}</span></td><td>{{ r.entidad }}</td><td>{{ r.detalle }}</td></tr>
+    {% else %}<tr><td colspan="5">Todavía no hay movimientos.</td></tr>{% endfor %}
+  </table></div>
+
+{% elif vista == 'usuarios' %}
+  <h2>Crear usuario</h2>
+  <form method="post" action="{{ url_for('ruta_crear_usuario') }}" class="grid">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+    <label>Usuario<input name="usuario" required minlength="4" maxlength="15" pattern="[A-Za-z][A-Za-z0-9_]{3,14}" title="De 4 a 15 caracteres: empieza con una letra y solo letras, números o guion bajo (_). Sin espacios ni símbolos."></label>
+    <label>Nombre completo<input name="nombre" required maxlength="60" placeholder="Ejemplo: Ana Pérez"></label>
+    <label>Rol<select name="rol">{% for r in roles %}<option>{{ r }}</option>{% endfor %}</select></label>
+    <label>Código del trabajador (solo rol Trabajador)<input name="codigo_empleado" placeholder="E001" maxlength="4"></label>
+    <label>Contraseña (8+, letras y números)
+      <div class="clave-wrap"><input type="password" name="clave" id="clave" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Cree una contraseña segura">{{ boton('clave') }}</div>
+    </label>
+    <label>Repita la contraseña
+      <div class="clave-wrap"><input type="password" name="clave2" id="clave2" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Repita la contraseña">{{ boton('clave2') }}</div>
+      <small id="coincidencia" aria-live="polite"></small>
+    </label>
+    <button>Crear usuario</button>
+  </form>
+  <script>
+  (function () {
+    var c1 = document.getElementById('clave'), c2 = document.getElementById('clave2'), aviso = document.getElementById('coincidencia');
+    function revisar() {
+      if (!c2.value) { aviso.textContent = ''; aviso.className = ''; return; }
+      var igual = c1.value === c2.value;
+      aviso.textContent = igual ? 'Las contraseñas coinciden.' : 'Las contraseñas no coinciden.';
+      aviso.className = igual ? 'ok' : 'mal';
+    }
+    c1.addEventListener('input', revisar); c2.addEventListener('input', revisar);
+  })();
+  </script>
+  <h2>Usuarios del sistema</h2>
+  <div class="tabla-wrap"><table>
+    <tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Trabajador</th><th>Creado</th></tr>
+    {% for u in lista_usuarios %}<tr><td>{{ u.usuario }}</td><td>{{ u.nombre }}</td><td>{{ u.rol }}</td><td>{{ u.codigo_empleado or '—' }}</td><td>{{ u.creado }}</td></tr>{% endfor %}
+  </table></div>
+
+{% else %}
+  <form method="get" class="barra">
+    <input type="hidden" name="vista" value="planilla">
+    <label>Mes (AAAA-MM)<input name="mes" value="{{ mes }}" pattern="[0-9]{4}-[0-9]{2}" required></label>
+    <button>Generar planilla</button>
+    <a class="btn sec" href="{{ url_for('ruta_exportar', mes=mes, formato='excel') }}">Descargar Excel</a>
+  </form>
+  {% for a in avisos %}<div class="msg error">Aviso – {{ a }}</div>{% endfor %}
+  <div class="tabla-wrap"><table>
+    <tr><th>Código</th><th>Trabajador</th><th>H. Mañana</th><th>H. Tarde</th><th>Total h</th><th>Tarifa/h</th><th>Pago (S/)</th></tr>
+    {% for p in planilla %}
+      <tr><td>{{ p.codigo }}</td><td>{{ p.nombres }} {{ p.apellidos }}</td><td>{{ p.horas_manana }}</td><td>{{ p.horas_tarde }}</td>
+          <td>{{ p.horas_trabajadas }}</td><td>{{ p.tarifa_hora }}</td><td>{{ '%.2f'|format(p.pago_mensual) }}</td></tr>
+    {% else %}<tr><td colspan="7">Sin datos para este mes.</td></tr>{% endfor %}
+  </table></div>
+  <div class="total">TOTAL PLANILLA {{ mes }}: S/ {{ '%.2f'|format(total) }}</div>
+{% endif %}
+</main>
+{{ script() }}
+</body>
+</html>
